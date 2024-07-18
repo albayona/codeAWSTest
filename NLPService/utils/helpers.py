@@ -3,6 +3,7 @@ import itertools
 import re
 from io import BytesIO
 
+import boto3
 import requests
 import spacy
 from PIL import Image
@@ -23,27 +24,27 @@ def get_past_date_from_relative_date(str_days_ago):
     if split[0].lower() == "a" or split[0].lower() == "an" or split[0].lower() == "one":
         split[0] = "1"
 
-    if len(split) == 1 and split[0].lower() == 'today':
+    if len(split) == 1 and split[0].lower() == "today":
         return str(today.isoformat())
-    elif len(split) == 1 and split[0].lower() == 'yesterday':
+    elif len(split) == 1 and split[0].lower() == "yesterday":
         return today - relativedelta(days=1)
 
-    elif split[1].lower() in ['hour', 'hours', 'hr', 'hrs', 'h']:
+    elif split[1].lower() in ["hour", "hours", "hr", "hrs", "h"]:
         return datetime.datetime.now() - relativedelta(hours=int(split[0]))
 
-    elif split[1].lower() in ['day', 'days', 'd']:
+    elif split[1].lower() in ["day", "days", "d"]:
         return today - relativedelta(days=int(split[0]))
 
-    elif split[1].lower() in ['wk', 'wks', 'week', 'weeks', 'w']:
+    elif split[1].lower() in ["wk", "wks", "week", "weeks", "w"]:
         return today - relativedelta(weeks=int(split[0]))
 
-    elif split[1].lower() in ['mon', 'mons', 'month', 'months', 'm']:
+    elif split[1].lower() in ["mon", "mons", "month", "months", "m"]:
         return today - relativedelta(months=int(split[0]))
 
-    elif split[1].lower() in ['yrs', 'yr', 'years', 'year', 'y']:
+    elif split[1].lower() in ["yrs", "yr", "years", "year", "y"]:
         return today - relativedelta(years=int(split[0]))
 
-    elif split[1].lower() in ['min', 'mins', 'minutes', 'minute', 'm']:
+    elif split[1].lower() in ["min", "mins", "minutes", "minute", "m"]:
         return today - relativedelta(hours=1)
     else:
         return today
@@ -76,20 +77,19 @@ def validate(post: DetailedPost):
         raise Exception("Post is not valid")
 
 
-
 def get_topn_tags(soup, n):
-    tags = soup.find_all(['span', 'a', 'li', 'lu', 'img', 'h1', 'p'])
+    tags = soup.find_all(["span", "a", "li", "lu", "img", "h1", "p"])
 
     classes = {}
 
     for tag in tags:
-        if tag.has_attr('class'):
-            cList = tag['class']
+        if tag.has_attr("class"):
+            cList = tag["class"]
             key = ""
             for c in cList:
                 key += " " + c
 
-            if key not in ['', ' ']:
+            if key not in ["", " "]:
                 if classes.get(key) is None:
                     classes[key] = 1
                 else:
@@ -97,7 +97,7 @@ def get_topn_tags(soup, n):
 
     classes = {key[1:]: value for key, value in classes.items() if value >= n}
 
-    print('maxtags')
+    print("maxtags")
     print(classes)
 
     return classes
@@ -105,20 +105,26 @@ def get_topn_tags(soup, n):
 
 def clean_post_soup(soup):
     # Find all div tags
-    div_tags = soup.find_all('div')
+    div_tags = soup.find_all("div")
 
     # Define the strings X and Y
-    strings_x = ["aboutthisvehicle", "seemore", "seller'sdescription", "sellerinformation", "sellerdetails"]
+    strings_x = [
+        "aboutthisvehicle",
+        "seemore",
+        "seller'sdescription",
+        "sellerinformation",
+        "sellerdetails",
+    ]
     string_y = "today'spicks"
 
     # Initialize variables to track minimum depth and corresponding div tag
-    min_depth = float('inf')  # Start with an infinitely large number
+    min_depth = float("inf")  # Start with an infinitely large number
     min_depth_div = None
 
     # Iterate through div tags and find the one with minimum depth that meets conditions
     for div in div_tags:
         text = div.get_text()
-        text = re.sub(r'\s+', '', text).lower()
+        text = re.sub(r"\s+", "", text).lower()
 
         contains_x = False
 
@@ -148,11 +154,13 @@ def get_xpath(element):
         previous = itertools.islice(parent.children, 0, parent.contents.index(child))
         xpath_tag = child.name
         xpath_index = sum(1 for i in previous if i.name == xpath_tag) + 1
-        components.append(xpath_tag if xpath_index == 1 else '%s[%d]' % (xpath_tag, xpath_index))
+        components.append(
+            xpath_tag if xpath_index == 1 else "%s[%d]" % (xpath_tag, xpath_index)
+        )
         child = parent
     components.reverse()
 
-    return '/%s' % '/'.join(components)
+    return "/%s" % "/".join(components)
 
 
 def extract_date_location(soup):
@@ -168,7 +176,7 @@ def extract_date_location(soup):
 
     for i in range(len(date_raw) - 2):
         t = date_raw[i] + " " + date_raw[i + 1] + " " + date_raw[i + 2]
-        t = re.sub(' +', ' ', t)
+        t = re.sub(" +", " ", t)
         ner = NER(t)
         dic_ents_date[t] = ""
 
@@ -176,7 +184,9 @@ def extract_date_location(soup):
             for ent in ner.ents:
                 dic_ents_date[t] += "-" + ent.label_
 
-        if ("TIME" in dic_ents_date[t] or "DATE" in dic_ents_date[t]) and "GPE" in dic_ents_date[t]:
+        if (
+            "TIME" in dic_ents_date[t] or "DATE" in dic_ents_date[t]
+        ) and "GPE" in dic_ents_date[t]:
             location_and_time = t
             break
 
@@ -201,18 +211,20 @@ def extract_model_price_miles_description_and_scraped_text(post_soup_m):
     for d in post_soup_m:
         text_m += d.get_text("|")
 
-    text_m = text_m.replace("This listing is far from your current location.", "") \
-        .replace("See listings near me", "") \
-        .replace("Send seller a message", "") \
-        .replace("Is this still available?", "") \
-        .replace("Hello, is this still available?", "") \
-        .replace("Report listing", "") \
-        .replace("Report Seller", "") \
-        .replace("Send", "") \
-        .replace("See All", "") \
+    text_m = (
+        text_m.replace("This listing is far from your current location.", "")
+        .replace("See listings near me", "")
+        .replace("Send seller a message", "")
+        .replace("Is this still available?", "")
+        .replace("Hello, is this still available?", "")
+        .replace("Report listing", "")
+        .replace("Report Seller", "")
+        .replace("Send", "")
+        .replace("See All", "")
         .replace("·", " ")
+    )
 
-    text_m = re.sub(' +', ' ', text_m)
+    text_m = re.sub(" +", " ", text_m)
     attrs = text_m.split("|")
 
     description = ""
@@ -233,22 +245,29 @@ def extract_model_price_miles_description_and_scraped_text(post_soup_m):
         for ent in ner.ents:
             dic[x] += "-" + ent.label_
 
-    sections = [r'about\s*this\s*vehicle', r"seller's\s*description", r'seller\ information', r'seller\s*details',
-                r'sponsored']
+    sections = [
+        r"about\s*this\s*vehicle",
+        r"seller's\s*description",
+        r"seller\ information",
+        r"seller\s*details",
+        r"sponsored",
+    ]
 
     for p in sections:
-        s_ = r'\s*(' + p + r')\s*'
+        s_ = r"\s*(" + p + r")\s*"
         pattern = re.compile(s_, re.IGNORECASE)
-        attributes = pattern.sub(r'{*\1{', attributes)
+        attributes = pattern.sub(r"{*\1{", attributes)
 
-    attributes = '{*Main scraped_text{' + attributes
+    attributes = "{*Main scraped_text{" + attributes
 
     model = ""
     price = ""
     miles = ""
 
     for attr in attrs:
-        if ("DATE" in dic[attr] or "CARDINAL" in dic[attr]) and ("ORG" in dic[attr] or "PRODUCT" in dic[attr]):
+        if ("DATE" in dic[attr] or "CARDINAL" in dic[attr]) and (
+            "ORG" in dic[attr] or "PRODUCT" in dic[attr]
+        ):
             model = attr
             break
 
@@ -277,7 +296,9 @@ def extract_model_price_miles_description_and_scraped_text(post_soup_m):
     ner_model = NER(model)
     year = 0
     for ents in ner_model.ents:
-        if (ents.label_ == "DATE" or ents.label_ == "CARDINAL") and ents.text.isnumeric():
+        if (
+            ents.label_ == "DATE" or ents.label_ == "CARDINAL"
+        ) and ents.text.isnumeric():
             year = int(ents.text)
             break
 
@@ -295,6 +316,16 @@ def extract_images(main_post_m):
 
 
 def save_images_to_s3(img_clean, link):
+    session = boto3.Session(
+        aws_access_key_id='AWS_ACCESS_KEY_ID',
+        aws_secret_access_key='AWS_SECRET_ACCESS_KEY',
+    )
+    s3 = session.resource('s3')
+    # Filename - File to upload
+    # Bucket - Bucket to upload to (the top level directory under AWS S3)
+    # Key - S3 object name (can contain subdirectories). If not specified then file_name is used
+    s3.meta.client.upload_file(Filename='input_file_path', Bucket='bucket_name', Key='s3_output_key')
+
     local_imgs = download_images(img_clean, link)
 
     return local_imgs
@@ -318,9 +349,11 @@ def download_images(img_clean, link):
             image = image.resize((250, new_height))
 
             # Save the image locally
-            image.save(f'utils/media/{link}-{index}.jpg', quality=100)
-            local_imgs.append(f'static/media/{link}-{index}.jpg')
-            print(f"Image successfully downloaded and saved to {f'api/bot/media/{link}-{index}.jpg'}")
+            image.save(f"utils/media/{link}-{index}.jpg", quality=100)
+            local_imgs.append(f"utils/media/{link}-{index}.jpg")
+            print(
+                f"Image successfully downloaded and saved to {f'media/{link}-{index}.jpg'}"
+            )
 
         except Exception as e:
             print(f"An image error occurred: {e}")
@@ -328,15 +361,17 @@ def download_images(img_clean, link):
 
 
 def get_images(post_soup):
-    img_buttons = post_soup.find_all('div', role="button")
-    divs_with_button_and_img = [div for div in img_buttons if div.find('img') is not None]
+    img_buttons = post_soup.find_all("div", role="button")
+    divs_with_button_and_img = [
+        div for div in img_buttons if div.find("img") is not None
+    ]
 
     imgs = []
     for divs in divs_with_button_and_img:
         for element in divs:
-            img_tmp = element.find_all('img')
+            img_tmp = element.find_all("img")
             for img in img_tmp:
-                imgs.append(img['src'])
+                imgs.append(img["src"])
 
     if len(imgs) < 3:
         raise Exception("Post is not valid: not enough images")
@@ -345,13 +380,13 @@ def get_images(post_soup):
 
 
 def see_more(driver, soup):
-    buttons = [soup.find_all('div', role="button")]
+    buttons = [soup.find_all("div", role="button")]
 
     see_more_list = []
 
     for set_ in buttons:
         for element in set_:
-            if element.text.lower().replace(' ', '') == "seemore":
+            if element.text.lower().replace(" ", "") == "seemore":
                 see_more_list.append(element)
 
     for _ in see_more_list:
@@ -359,7 +394,8 @@ def see_more(driver, soup):
 
         try:
             element = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable((By.XPATH, xpath)))
+                EC.element_to_be_clickable((By.XPATH, xpath))
+            )
             element.click()
 
             clickable = driver.find_element(By.XPATH, xpath)

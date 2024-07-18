@@ -7,11 +7,12 @@ from uuid import UUID, uuid4
 from fastapi.middleware.cors import CORSMiddleware
 
 import requests
-from fastapi import BackgroundTasks, HTTPException
+from fastapi import BackgroundTasks, HTTPException, status
 from fastapi import FastAPI
 from fastapi import Request
 from pydantic import BaseModel, Field
 
+import API_GATEWAY
 from utils import NLPScraper
 from utils.NLPScraper import cpu_bound_func_scrape
 
@@ -35,11 +36,12 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Allows all origins
     allow_credentials=True,  # Allows cookies to be included in cross-origin requests
-    allow_methods=["*"],     # Allows all HTTP methods (GET, POST, etc.)
-    allow_headers=["*"],     # Allows all headers
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
 )
 
 jobs: Dict[UUID, Job] = {}
+
 
 async def run_in_process(fn, *args):
     loop = asyncio.get_event_loop()
@@ -52,10 +54,10 @@ async def start_cpu_bound_task(uid: UUID, param: int, user: str) -> None:
     publish_to_api(user, param)
 
 
-
 @app.post("/scrape/{param}", status_code=HTTPStatus.ACCEPTED)
 async def scrape_task_handler(param: str, background_tasks: BackgroundTasks, request: Request):
     user = request.headers.get('X-Consumer-Custom-Id')
+    API_GATEWAY.TOKEN = get_token(request)
 
     if not user:
         raise HTTPException(status_code=400, detail="X-Consumer-Custom-Id header missing")
@@ -80,13 +82,16 @@ def login():
     return {"message": "Logged in"}
 
 
-def publish_to_api(user_id, scraped_id, base_url='http://localhost:8090'):
+def publish_to_api(user_id, scraped_id, base_url=API_GATEWAY.BASE_URL, token=API_GATEWAY.TOKEN):
     try:
         # Define the endpoint URL
-        url = f"{base_url}/publish/{user_id}/{scraped_id}"
+        url = f"{base_url}/content/publish/{user_id}/{scraped_id}"
+        headers = {
+            'Authorization': f'Bearer {token}'
+        }
 
         # Make a POST request
-        response = requests.post(url)
+        response = requests.post(url, headers=headers)
 
         # Check if the request was successful (HTTP status code 200)
         if response.status_code == 200:
@@ -99,3 +104,20 @@ def publish_to_api(user_id, scraped_id, base_url='http://localhost:8090'):
     except requests.RequestException as e:
         print(f"An error occurred: {e}")
         return False
+
+
+def get_token(request: Request):
+    authorization: str = request.headers.get("Authorization")
+    if authorization:
+        scheme, token = authorization.split()
+        if scheme.lower() != "bearer":
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication scheme",
+            )
+        return {"token": token}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authorization header missing",
+        )
