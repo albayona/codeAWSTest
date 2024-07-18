@@ -76,7 +76,7 @@ def login():
     try:
         NLPScraper.login()
     except Exception as e:
-        return {"message": f"Login Error: {e}"}
+        return {"message": f"Login Error: {e} {e.__traceback__}"}
     return {"message": "Logged in"}
 
 
