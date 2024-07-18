@@ -1,0 +1,22 @@
+##
+import jwt
+from jwt import ExpiredSignatureError, InvalidTokenError
+from cryptography.hazmat.primitives import serialization
+
+# The JWT to decode
+encoded_jwt = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzIxMTMxODc2LCJpYXQiOjE3MjExMjEwNzYsImp0aSI6IjIxZmI5ZGM2NDBhNjQxOGI4MDIzN2M1ZWNkMjdlMzk5IiwidXNlcl9pZCI6MSwidXNlcm5hbWUiOiJ1c2VybmFtZTEwIiwiZW1haWwiOiJlbWFpbDEwQGVtYWlsLmNvbSIsImlzcyI6IjI1YmUxY2Y4LWYyYWUtNGZhMi1hZTZkLTE5ZTdmM2FjZmEyYiJ9.fRhjGiK0f1vO2DZf7iYR9GCbPWLoiu76TJeyGu8aIFWYauN8XSPCg8zf3yztlAnxgJgXH4pUr8EFFhuUqlm1OFitiadKgICB-HUfXBWtbClDCp2jEiPwWNQ-QrGOOAEJoGPBk0gKy9s2LE5CdWim8bVpvL3wszBVZHPGri0o7EpdXUZBzJzBLoO0SM6KKzppBxcxAiviFrJhZV7BJRmhazw2C9H_SK9zSD4peabeFSHtwL-NvC6bzL5WiSWzxgGbeeqB0QWuBgUJLWR-crZ97pC5BhxnJMjFyAS3fRfI7qJOn5F3COwtz18RgsIc0kOXevYzVXFHRhEpSvZ8DwyP2kGEgkI96z-jeDrc0nU136Flfv8vCBgSHkNdYh39SiUr9ycknYV84exk8XZX2cuTklmM7zuRzXxvNz1W67EZFKmH8530Wx0r17YQ6W_X4ZDJ1f-HRfIGsr5-xLbemf4bnKq3DHDMi7yxElgxIbCb6itviYCXJ31wdZvX_p-QLDJvlxftcqq2XJXdTgKbbsRJ3HvODerdpwrpSjiIoicoe_ATfK6LLRwTNFwyPyHv2jQHIQ5JjA2FaJCqDJCGy3QVCC5-X4qNEtAaMtB559e9QQ1xYclNa7pv2aDw1sVfff-fppG5cGYoIEtrLCH2LO9EVTp18OQ6buEY-WgZeK29Rfw'
+
+with open("jwtRS256.key.pub", "rb") as key_file:
+    public_key = serialization.load_pem_public_key(key_file.read())
+
+try:
+    # Decode the JWT
+    decoded_jwt = jwt.decode(encoded_jwt, public_key, algorithms=["RS256"])
+
+    # Print the decoded payload
+    print("Decoded JWT:", decoded_jwt)
+
+except ExpiredSignatureError:
+    print("Token has expired")
+except InvalidTokenError:
+    print("Invalid token")
