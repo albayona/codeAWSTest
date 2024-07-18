@@ -1,0 +1,56 @@
+from fastapi import FastAPI, WebSocket
+import redis
+import asyncio
+from sse_starlette.sse import EventSourceResponse
+
+app = FastAPI()
+from fastapi import Request
+
+# Redis client configuration
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=1)
+
+
+# Function to publish data to Redis
+def publish_data_on_redis(user_id, scraped_id):
+    redis_client.publish(user_id, scraped_id)
+
+
+# Function to subscribe to Redis channel
+def subscribe(user_id):
+    p = redis_client.pubsub()
+    p.psubscribe(user_id)
+    return p
+
+
+# SSE endpoint to subscribe and stream events
+@app.get("/subscribe/")
+async def subscribe_to_events(request: Request):
+    async def event_generator():
+        user_id = request.headers.get('X-Consumer-Custom-Id')
+        # Subscribe to user's channel
+        p = subscribe(user_id)
+        try:
+            while True:
+                message = p.get_message()
+                if message:
+                    data = message.get('data')
+                    if data:
+                        yield f"data: {data}\n\n"
+                    await asyncio.sleep(0.1)  # Optional: Adjust the sleep time
+                else:
+                    await asyncio.sleep(1)
+        except asyncio.CancelledError:
+            p.unsubscribe(user_id)
+            p.close()
+
+    return EventSourceResponse(event_generator())
+
+
+# Endpoint to publish a message to Redis
+@app.post("/publish/{user_id}/{scraped_id}")
+async def publish_message(user_id: str, scraped_id: str):
+    try:
+        publish_data_on_redis(user_id, scraped_id)
+        return {"detail": f"Published message '{scraped_id}' to user '{user_id}'"}
+    except Exception as e:
+        return {"error": str(e)}
