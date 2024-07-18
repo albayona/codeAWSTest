@@ -49,3 +49,21 @@ class DetailedPost:
         for attr_name, attr_value in vars(self).items():
             attributes_str += f"{attr_name}: {attr_value}\n"
         return attributes_str
+
+    def to_dict(self):
+        # Convert the DetailedPost object to a dictionary
+        return {
+            'description': self.description,
+            'date': self.date.strftime('%Y-%m-%d'),  # Convert datetime to ISO format string
+            'price': self.price,
+            'model': self.model,
+            'place': self.place,
+            'miles': self.miles,
+            'link': self.link,
+            'year': self.year,
+            'images': self.images,
+            'score': self.score,
+            'scraped_text': self.scraped_text,
+            'seller_desc': self.seller_desc,
+            'about': self.about
+        }

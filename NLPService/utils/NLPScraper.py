@@ -3,11 +3,13 @@ import shutil
 import traceback
 from time import sleep
 
+import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver import Keys
 
+import API_GATEWAY
 from DTOs.DetailedPost import DetailedPost
 from utils.helpers import (
     extract_images,
@@ -21,8 +23,8 @@ from utils.helpers import (
 
 
 def cpu_bound_func_scrape(link_id, user):
-    delete_folder_if_exists(f"login_data/original_data{link_id}")
-    shutil.copytree("login_data/original_data", f"login_data/original_data{link_id}")
+    delete_folder_if_exists(f"user_login_data/original_data{link_id}")
+    shutil.copytree("user_login_data/original_data", f"user_login_data/original_data{link_id}")
 
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument("--disable-notifications")
@@ -31,7 +33,7 @@ def cpu_bound_func_scrape(link_id, user):
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument(f"--user-data-dir=login_data/original_data{link_id}")
+    chrome_options.add_argument(f"--user-data-dir=user_login_data/original_data{link_id}")
     # chrome_options.add_experimental_option("detach", True)
     # Initialize Chrome WebDriver
     driver = webdriver.Chrome(options=chrome_options)
@@ -97,12 +99,12 @@ def cpu_bound_func_scrape(link_id, user):
 
         print(detailed_post)
 
-        # post_detailed_post(detailed_post)
+        publish_to_api(user, link_id, detailed_post)
 
-        shutil.rmtree(f"login_data/original_data{link_id}")
+        shutil.rmtree(f"user_login_data/original_data{link_id}")
 
     except Exception as e:
-        shutil.rmtree(f"login_data/original_data{link_id}")
+        shutil.rmtree(f"user_login_data/original_data{link_id}")
         print(link_id, e)
         traceback.print_exc()
 
@@ -117,7 +119,7 @@ def login():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
 
-    chrome_options.add_argument(f"--user-data-dir=login_data/original_data")
+    chrome_options.add_argument(f"--user-data-dir=user_login_data/original_data")
 
     # chrome_options.add_experimental_option("detach", True)
     # Initialize Chrome WebDriver
@@ -169,6 +171,33 @@ def login():
     sleep(1)
 
 
+def publish_to_api(user_id, scraped_id, post: DetailedPost, base_url=API_GATEWAY.BASE_URL, token=API_GATEWAY.TOKEN):
+    try:
+        # Define the endpoint URL
+        url = f"{base_url}/create/"
+        headers = {
+            'Authorization': f'Bearer {token}',
+            'X-Consumer-Custom-Id': user_id,
+        }
+        print(f"Posting car '{scraped_id}' to user '{user_id}'...")
+
+        post_data = post.to_dict()
+
+        # Make a POST request
+        response = requests.post(url, headers=headers, json=post_data)
+
+        # Check if the request was successful (HTTP status code 200)
+        if response.status_code == 200:
+            print(f"Car '{scraped_id}' posted to user '{user_id}' successfully.")
+            return True
+        else:
+            print(f"Failed to post car. Status code: {response.status_code} {response.text}")
+            return False
+
+    except requests.RequestException as e:
+        print(f"An error occurred: {e}")
+        return False
+
 def delete_folder_if_exists(folder_path):
     # Check if the folder exists
     if os.path.exists(folder_path):
@@ -186,3 +215,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+

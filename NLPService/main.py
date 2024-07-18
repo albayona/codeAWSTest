@@ -51,7 +51,6 @@ async def run_in_process(fn, *args):
 async def start_cpu_bound_task(uid: UUID, param: int, user: str) -> None:
     jobs[uid].result = await run_in_process(cpu_bound_func_scrape, param, user)
     jobs[uid].status = "complete"
-    # publish_to_api(user, param)
 
 
 @app.post("/scrape/{param}", status_code=HTTPStatus.ACCEPTED)
@@ -82,28 +81,7 @@ def login():
     return {"message": "Logged in"}
 
 
-def publish_to_api(user_id, scraped_id, base_url=API_GATEWAY.BASE_URL, token=API_GATEWAY.TOKEN):
-    try:
-        # Define the endpoint URL
-        url = f"{base_url}/content/publish/{user_id}/{scraped_id}"
-        headers = {
-            'Authorization': f'Bearer {token}'
-        }
 
-        # Make a POST request
-        response = requests.post(url, headers=headers)
-
-        # Check if the request was successful (HTTP status code 200)
-        if response.status_code == 200:
-            print(f"Message '{scraped_id}' published to user '{user_id}' successfully.")
-            return True
-        else:
-            print(f"Failed to publish message. Status code: {response.status_code}")
-            return False
-
-    except requests.RequestException as e:
-        print(f"An error occurred: {e}")
-        return False
 
 
 def get_token(request: Request):
