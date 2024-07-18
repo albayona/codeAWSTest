@@ -82,7 +82,12 @@ def login():
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--disable-notifications')
     chrome_options.add_argument("--start-maximized")
+    
+    options.addArguments("--no-sandbox");
+    options.addArguments("--disable-dev-shm-usage");
+
     chrome_options.add_argument(f"--user-data-dir=login_data/original_data")
+
     # chrome_options.add_experimental_option("detach", True)
     # Initialize Chrome WebDriver
     driver = webdriver.Chrome(options=chrome_options)
