@@ -1,3 +1,4 @@
+import os
 import shutil
 import traceback
 from time import sleep
@@ -14,7 +15,9 @@ from utils.helpers import extract_images, clean_post_soup, \
 
 
 def cpu_bound_func_scrape(link_id, user):
+    delete_folder_if_exists(f"login_data/original_data{link_id}")
     shutil.copytree("login_data/original_data", f"login_data/original_data{link_id}")
+    
     chrome_options = webdriver.ChromeOptions()
     chrome_options.add_argument('--disable-notifications')
     chrome_options.add_argument("--start-maximized")
@@ -142,6 +145,16 @@ def login():
     driver.get('https://www.facebook.com/')
     sleep(1)
 
+
+def delete_folder_if_exists(folder_path):
+    # Check if the folder exists
+    if os.path.exists(folder_path):
+        print(f"Folder '{folder_path}' exists. Deleting...")
+        # Delete the folder and all its contents
+        shutil.rmtree(folder_path)
+        print(f"Folder '{folder_path}' has been deleted.")
+    else:
+        print(f"Folder '{folder_path}' does not exist.")
 
 def main():
     cpu_bound_func_scrape("101546652903706")
