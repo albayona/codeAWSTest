@@ -98,6 +98,8 @@ class Scraper:
 
         print(simple_posts)
 
+        self.driver.quit()
+
         for simple_post in simple_posts:
             if non_existent(simple_post):
                 self.request_NLP_scrape(simple_post)
@@ -106,8 +108,8 @@ class Scraper:
         post = create_post(simple_post)
         url = f"{BASE_URL}/scrape/{simple_post.link}"
         headers = {
-            "X-Consumer-Custom-Id": {self.user},
-            "Authorization": {self.token},
+            "X-Consumer-Custom-Id": self.user,
+            "Authorization": self.token,
         }
         # Make the GET request
         response = requests.get(url, headers=headers)
