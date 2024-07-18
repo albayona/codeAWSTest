@@ -51,7 +51,7 @@ async def run_in_process(fn, *args):
 async def start_cpu_bound_task(uid: UUID, param: int, user: str) -> None:
     jobs[uid].result = await run_in_process(cpu_bound_func_scrape, param, user)
     jobs[uid].status = "complete"
-    publish_to_api(user, param)
+    # publish_to_api(user, param)
 
 
 @app.post("/scrape/{param}", status_code=HTTPStatus.ACCEPTED)

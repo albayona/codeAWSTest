@@ -1,17 +1,21 @@
 import datetime
 import itertools
+import os
 import re
+import shutil
 from io import BytesIO
 
 import boto3
 import requests
 import spacy
 from PIL import Image
+from botocore.exceptions import NoCredentialsError
 from dateutil.relativedelta import relativedelta
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+import S3_BUCKET
 from DTOs.DetailedPost import DetailedPost
 from utils.filter_keywords import *
 
@@ -206,11 +210,24 @@ def extract_date_location(soup):
     return date, location
 
 
-def extract_model_price_miles_description_and_scraped_text(post_soup_m):
+def extract_model_price_miles_description_and_scraped_text_about_seller(post_soup_m):
+    NER = spacy.load("en_core_web_sm")
+
+    attrs, description, dic, scraped_text = extract_desc_scraped_text(NER, post_soup_m)
+
+    scraped_text, sections = extract_sections(scraped_text)
+
+    about_list, seller_list = extrat_about_seller(sections)
+
+    miles_d, model, price_d, year = extract_model_price_miles(NER, attrs, dic)
+
+    return scraped_text, description, miles_d, model, price_d, year, about_list, seller_list
+
+
+def extract_desc_scraped_text(NER, post_soup_m):
     text_m = ""
     for d in post_soup_m:
         text_m += d.get_text("|")
-
     text_m = (
         text_m.replace("This listing is far from your current location.", "")
         .replace("See listings near me", "")
@@ -223,14 +240,11 @@ def extract_model_price_miles_description_and_scraped_text(post_soup_m):
         .replace("See All", "")
         .replace("·", " ")
     )
-
     text_m = re.sub(" +", " ", text_m)
     attrs = text_m.split("|")
-
     description = ""
-    attributes = ""
+    scraped_text = ""
 
-    NER = spacy.load("en_core_web_sm")
     dic = {}
     for x in attrs:
         dic[x] = ""
@@ -240,69 +254,88 @@ def extract_model_price_miles_description_and_scraped_text(post_soup_m):
             description += x + "|\n"
 
         if len(ner.ents) <= 3 and x != "":
-            attributes += x + "|\n"
+            scraped_text += x + "|\n"
 
         for ent in ner.ents:
             dic[x] += "-" + ent.label_
+    return attrs, description, dic, scraped_text
 
+
+def extract_sections(scraped_text):
     sections = [
         r"about\s*this\s*vehicle",
         r"seller's\s*description",
-        r"seller\ information",
+        r"seller\s*information",
         r"seller\s*details",
         r"sponsored",
     ]
-
     for p in sections:
         s_ = r"\s*(" + p + r")\s*"
         pattern = re.compile(s_, re.IGNORECASE)
-        attributes = pattern.sub(r"{*\1{", attributes)
+        scraped_text = pattern.sub(r"{*\1{", scraped_text)
+    scraped_text = "{*Main scraped_text{" + scraped_text
+    sections = scraped_text.split("{")
+    return scraped_text, sections
 
-    attributes = "{*Main scraped_text{" + attributes
 
+def extract_model_price_miles(NER, attrs, dic):
     model = ""
     price = ""
     miles = ""
-
     for attr in attrs:
         if ("DATE" in dic[attr] or "CARDINAL" in dic[attr]) and (
-            "ORG" in dic[attr] or "PRODUCT" in dic[attr]
+                "ORG" in dic[attr] or "PRODUCT" in dic[attr]
         ):
             model = attr
             break
-
     for attr in attrs:
         if "MONEY" in dic[attr]:
             price = attr
             break
-
     for attr in attrs:
         if "QUANTITY" in dic[attr]:
             miles += attr
             break
-
     print(model)
     print(price)
     print(miles)
-
     miles_arr = [int(s) for s in miles.replace(",", "").split() if s.isdigit()]
     miles_d = 0
-
     if len(miles_arr) > 0:
         miles_d = miles_arr[0]
-
     price_d = float(price.replace("$", "").replace(",", ""))
-
     ner_model = NER(model)
     year = 0
     for ents in ner_model.ents:
         if (
-            ents.label_ == "DATE" or ents.label_ == "CARDINAL"
+                ents.label_ == "DATE" or ents.label_ == "CARDINAL"
         ) and ents.text.isnumeric():
             year = int(ents.text)
             break
+    return miles_d, model, price_d, year
 
-    return attributes, description, miles_d, model, price_d, year
+
+def extrat_about_seller(sections):
+    about_list = []
+    seller_list = []
+    for index, section in enumerate(sections):
+        if section.lower().startswith("*") and index + 1 < len(sections):
+            about_pattern = re.compile(r'about\s*this\s*vehicle', re.IGNORECASE)
+            seller_pattern1 = re.compile(r"seller's\s*description", re.IGNORECASE)
+            seller_pattern2 = re.compile(r"seller\s*information", re.IGNORECASE)
+            seller_pattern3 = re.compile(r"seller\s*details", re.IGNORECASE)
+
+            index_ = sections[index + 1].replace("\n", "")
+            split = index_.split("|")
+            split = [item for item in split if item.strip()]
+
+            if bool(about_pattern.search(section)):
+                about_list.extend(split)
+
+            elif bool(seller_pattern1.search(section)) or bool(seller_pattern2.search(section)) or bool(
+                    seller_pattern3.search(section)):
+                seller_list.extend(split)
+    return about_list, seller_list
 
 
 def extract_images(main_post_m):
@@ -317,18 +350,36 @@ def extract_images(main_post_m):
 
 def save_images_to_s3(img_clean, link):
     session = boto3.Session(
-        aws_access_key_id='AWS_ACCESS_KEY_ID',
-        aws_secret_access_key='AWS_SECRET_ACCESS_KEY',
+        aws_access_key_id=S3_BUCKET.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=S3_BUCKET.AWS_SECRET_ACCESS_KEY,
     )
     s3 = session.resource('s3')
-    # Filename - File to upload
-    # Bucket - Bucket to upload to (the top level directory under AWS S3)
-    # Key - S3 object name (can contain subdirectories). If not specified then file_name is used
-    s3.meta.client.upload_file(Filename='input_file_path', Bucket='bucket_name', Key='s3_output_key')
 
     local_imgs = download_images(img_clean, link)
+    s3_imgs = []
 
-    return local_imgs
+    for img in local_imgs:
+        try:
+
+            image_name = os.path.basename(img)
+
+            s3.meta.client.upload_file(Filename=img, Bucket=S3_BUCKET.BUCKET_NAME, Key=image_name)
+
+            s3_url = f"https://{S3_BUCKET.BUCKET_NAME}.s3.amazonaws.com/{image_name}"
+            s3_imgs.append(s3_url)
+
+            print(f"Successfully uploaded {img} to {s3_url}")
+
+        except FileNotFoundError:
+            print(f"The file {img} was not found.")
+        except NoCredentialsError:
+            print("Credentials not available.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
+
+    empty_folder("utils/media")
+
+    return s3_imgs
 
 
 def download_images(img_clean, link):
@@ -405,3 +456,20 @@ def see_more(driver, soup):
 
         except Exception as e:
             print(f"Exception occurred for see more: {e}")
+
+
+def empty_folder(folder_path):
+    try:
+        for filename in os.listdir(folder_path):
+            file_path = os.path.join(folder_path, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)  # Remove file
+            elif os.path.isdir(file_path):
+                shutil.rmtree(file_path)  # Remove directory and its contents
+        print(f"Folder '{folder_path}' has been emptied.")
+    except FileNotFoundError:
+        print(f"The folder '{folder_path}' does not exist.")
+    except PermissionError:
+        print(f"Permission denied to empty '{folder_path}'.")
+    except Exception as e:
+        print(f"An error occurred: {e}")

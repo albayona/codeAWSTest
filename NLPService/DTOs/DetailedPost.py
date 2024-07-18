@@ -26,7 +26,7 @@ def get_score(description, miles, model, price, year):
 
 class DetailedPost:
     def __init__(self, scraped_text: str, description: str, date: datetime, price: float, model: str,
-                 place: str, miles: float, link: str, year: int, images: list):
+                 place: str, miles: float, link: str, year: int, images: list, about: list, seller_desc: list):
         self.description = description
         self.date = date
         self.price = price
@@ -38,6 +38,8 @@ class DetailedPost:
         self.images = images
         self.score = get_score(description, miles, model, price, year)
         self.scraped_text = scraped_text
+        self.seller_desc = seller_desc
+        self.about = about
 
     def attrs_list(self):
         return [(v, k) for v, k in self.__dict__.items()]

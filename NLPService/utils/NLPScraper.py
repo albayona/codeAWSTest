@@ -12,7 +12,7 @@ from DTOs.DetailedPost import DetailedPost
 from utils.helpers import (
     extract_images,
     clean_post_soup,
-    extract_model_price_miles_description_and_scraped_text,
+    extract_model_price_miles_description_and_scraped_text_about_seller,
     extract_date_location,
     validate,
     save_images_to_s3,
@@ -68,7 +68,10 @@ def cpu_bound_func_scrape(link_id, user):
             model,
             price_d,
             year,
-        ) = extract_model_price_miles_description_and_scraped_text(post_soup)
+            about,
+            seller,
+
+        ) = extract_model_price_miles_description_and_scraped_text_about_seller(post_soup)
 
         date, location = extract_date_location(post_soup)
 
@@ -83,6 +86,8 @@ def cpu_bound_func_scrape(link_id, user):
             link_id,
             year,
             imgs_clean,
+            about,
+            seller,
         )
 
         validate(detailed_post)
