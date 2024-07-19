@@ -171,7 +171,10 @@ def login():
     sleep(1)
 
 
-def publish_to_api(user_id, scraped_id, post: DetailedPost, base_url=API_GATEWAY.BASE_URL, token=API_GATEWAY.TOKEN):
+def publish_to_api(user_id, scraped_id, post: DetailedPost):
+    base_url = API_GATEWAY.BASE_URL
+    token = API_GATEWAY.TOKEN
+    print(token)
     try:
         # Define the endpoint URL
         url = f"{base_url}/create/"
