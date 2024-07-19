@@ -25,7 +25,7 @@ class Job(BaseModel):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.executor = ProcessPoolExecutor(3)
+    app.state.executor = ProcessPoolExecutor(1)
     yield
     app.state.executor.shutdown()
 
