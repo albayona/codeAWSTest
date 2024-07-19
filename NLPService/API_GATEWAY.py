@@ -1,4 +1,4 @@
-HOST = 'http://127.0.0.1'
-PORT = '8010'
+HOST = 'http://3.20.227.39'
+PORT = '8000'
 BASE_URL = f'{HOST}:{PORT}'
 TOKEN = None
