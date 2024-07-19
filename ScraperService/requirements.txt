@@ -79,7 +79,7 @@ cloudpathlib==0.18.1
 dj-config-url==0.1.1
 dj-database-url==0.4.1
 django-cors-headers==3.7.0
-en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.5.0/en_core_web_sm-3.5.0-py3-none-any.whl#sha256=0964370218b7e1672a30ac50d72cdc6b16f7c867496f1d60925691188f4d2510
 es-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/es_core_news_sm-3.5.0/es_core_news_sm-3.5.0-py3-none-any.whl#sha256=13b909bac0de5f5338f4327b14a9cc9736cf51f07131a3cfcb688dbeb8608bdd
 es-dep-news-trf @ https://github.com/explosion/spacy-models/releases/download/es_dep_news_trf-3.5.0/es_dep_news_trf-3.5.0-py3-none-any.whl#sha256=4322e809c35ae135cc8fa71831c1aeafc1b6232886c45b247ed431d264d3445e
 export==0.1.2
@@ -97,3 +97,8 @@ virtualenv-clone==0.5.4
 weasel==0.4.1
 webdriver-manager==4.0.1
 whitenoise==5.2.0
+## The following requirements were added by pip freeze:
+spacy-alignments==0.9.1
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+spacy-transformers==1.2.5
