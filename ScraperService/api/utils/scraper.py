@@ -116,7 +116,7 @@ class Scraper:
         # Make the GET request
         response = requests.post(url, headers=headers)
         # Check the response
-        if response.status_code == 200:
+        if response.status_code in [200, 201, 202]:
             post.uuid = response.json()['uuid']
             print("Request was successful")
             print("Response data:", response.json())  # Or response.text for plain text response
