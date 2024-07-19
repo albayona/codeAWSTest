@@ -57,9 +57,10 @@ async def subscribe_to_events(request: Request):
 
 
 # Endpoint to publish a message to Redis
-@app.post("/publish/{user_id}/{scraped_id}")
-async def publish_message(user_id: str, scraped_id: str):
+@app.post("/publish/{scraped_id}")
+async def publish_message(scraped_id: str, request: Request):
     try:
+        user_id = request.headers.get('user')
         publish_data_on_redis(user_id, scraped_id)
         return {"detail": f"Published message '{scraped_id}' to user '{user_id}'"}
     except Exception as e:
