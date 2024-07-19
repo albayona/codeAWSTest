@@ -48,22 +48,22 @@ async def run_in_process(fn, *args):
     return await loop.run_in_executor(app.state.executor, fn, *args)  # wait and return result
 
 
-async def start_cpu_bound_task(uid: UUID, param: int, user: str) -> None:
-    jobs[uid].result = await run_in_process(cpu_bound_func_scrape, param, user)
+async def start_cpu_bound_task(uid: UUID, param: int, user: str, token: str) -> None:
+    jobs[uid].result = await run_in_process(cpu_bound_func_scrape, param, user, token)
     jobs[uid].status = "complete"
 
 
 @app.post("/scrape-nlp/{param}", status_code=HTTPStatus.ACCEPTED)
 async def scrape_task_handler(param: str, background_tasks: BackgroundTasks, request: Request):
     user = request.headers.get('X-Consumer-Custom-Id')
-    API_GATEWAY.TOKEN = get_token(request)
+    token = get_token(request)
 
     if not user:
         raise HTTPException(status_code=400, detail="X-Consumer-Custom-Id header missing")
 
     new_task = Job()
     jobs[new_task.uid] = new_task
-    background_tasks.add_task(start_cpu_bound_task, new_task.uid, param, user)
+    background_tasks.add_task(start_cpu_bound_task, new_task.uid, param, user, token)
     return new_task
 
 

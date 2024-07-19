@@ -22,7 +22,7 @@ from utils.helpers import (
 )
 
 
-def cpu_bound_func_scrape(link_id, user):
+def cpu_bound_func_scrape(link_id, user, token):
     delete_folder_if_exists(f"user_login_data/original_data{link_id}")
     shutil.copytree("user_login_data/original_data", f"user_login_data/original_data{link_id}")
 
@@ -99,7 +99,7 @@ def cpu_bound_func_scrape(link_id, user):
 
         print(detailed_post)
 
-        publish_to_api(user, link_id, detailed_post)
+        publish_to_api(user, link_id, detailed_post, token)
 
         shutil.rmtree(f"user_login_data/original_data{link_id}")
 
@@ -171,17 +171,16 @@ def login():
     sleep(1)
 
 
-def publish_to_api(user_id, scraped_id, post: DetailedPost):
-    base_url = API_GATEWAY.BASE_URL
-    token = API_GATEWAY.TOKEN
-    print(token)
+def publish_to_api(user_id, scraped_id, post: DetailedPost, token):
     try:
         # Define the endpoint URL
-        url = f"{base_url}/create/"
+        url = f"{API_GATEWAY.BASE_URL}/create/"
         headers = {
             'Authorization': token,
             'X-Consumer-Custom-Id': user_id,
         }
+
+        print(headers)
         print(f"Posting car '{scraped_id}' to user '{user_id}'...")
 
         post_data = post.to_dict()
