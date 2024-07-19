@@ -176,7 +176,7 @@ def publish_to_api(user_id, scraped_id, post: DetailedPost, base_url=API_GATEWAY
         # Define the endpoint URL
         url = f"{base_url}/create/"
         headers = {
-            'Authorization': f'Bearer {token}',
+            'Authorization': token,
             'X-Consumer-Custom-Id': user_id,
         }
         print(f"Posting car '{scraped_id}' to user '{user_id}'...")
