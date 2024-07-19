@@ -97,11 +97,10 @@ def create_car_view(request):
                 car=car
             )
 
-        user_email = request.user.email  # Example user ID
-        pub_event_url = f'{BASE_URL}/{car.id}'
-        headers = {"user": user_email}
-
-        response = requests.post(pub_event_url, headers=headers)
+        user_email = request.user.email.replace('@', ' ')  # Example user ID
+        pub_event_url = f'{BASE_URL}/{user_email}/{car.id}/'
+    
+        response = requests.post(pub_event_url)
 
         return JsonResponse({'status': 'success', 'car_id': car.id, 'event_url': pub_event_url, 'response': response.text})
 
