@@ -99,9 +99,9 @@ export default function AdminBar() {
             open={isMenuOpen}
             onClose={handleMenuClose}
         >
-            <MenuItem onClick={handleMenuClose}>Perfil</MenuItem>
-            <MenuItem onClick={handleMenuClose}>Preferencias</MenuItem>
-            <MenuItem onClick={logOut}>Cerrar sesión</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+            <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+            <MenuItem onClick={logOut}>Log out</MenuItem>
         </Menu>
     );
 
