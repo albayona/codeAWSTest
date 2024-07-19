@@ -14,7 +14,7 @@ import {useAuth} from "../conntexts/UserContext";
 import {Alert, Paper} from "@mui/material";
 import {useNavigate} from "react-router-dom";
 import {useEffect} from "react";
-import {AUTH_HOST} from "../hooks/useFetch";
+import {API_HOST} from "../hooks/useFetch";
 
 
 function Copyright(props) {
@@ -44,7 +44,7 @@ export default function LogIn() {
 
     useEffect(() => {
         if (loginEvent) {
-            fetch(`${AUTH_HOST}/token/`, {
+            fetch(`${API_HOST}/token/token/`, {
                 method: 'POST', headers: {
                     'Content-Type': 'application/json'
                 },

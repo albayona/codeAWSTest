@@ -25,9 +25,69 @@ def main():
 
 
     '''
-    curl -i -s -X POST localhost:8001/services --data 'name=pub_service' --data 'url=http://18.220.226.53:8080'
+    curl -i -s -X POST localhost:8001/services --data 'name=auth_service' --data 'url=http://3.20.227.39:8080'
    
-    curl -i -s -X POST localhost:8001/services/pub_service/routes --data 'paths[]=/subscribe/' --data name=subscribe_
+    curl -i -s -X POST localhost:8001/services/auth_service/routes --data 'paths[]=/token/' --data name=token
+    
+    
+    curl -X POST http://localhost:8001/services/pub_service/plugins \
+   --header "accept: application/json" \
+   --header "Content-Type: application/json" \
+   --data '
+   {
+ "name": "cors",
+ "config": {
+   "origins": [
+     "*"
+   ],
+   "methods": [
+     "GET",
+     "POST"
+   ],
+   "headers": [
+     "*"
+   ],
+   "exposed_headers": [
+     "*"
+   ],
+   "credentials": true,
+   "max_age": 3600
+ }
+}
+
+
+
+
+curl -i -X PATCH http://localhost:8001/plugins/05c24121-80f4-489d-862f-dbaeaf773b90 \
+  --data "enabled=false"
+
+
+
+curl -i -X POST http://localhost:8001/services/nlp_service/plugins \
+  --data "name=jwt"
+  
+curl -i -X POST http://localhost:8001/services/content_service/plugins \
+  --data "name=jwt"
+  
+curl -i -X POST http://localhost:8001/services/pub_service/plugins \
+  --data "name=jwt"
+  
+curl -i -X POST http://localhost:8001/services/scrape_service/plugins \
+  --data "name=jwt"
+  
+
+
+content_service
+pub_service
+scrape_service
+
+
+
+   '
+
+    
+    
+    
     
     '''
 

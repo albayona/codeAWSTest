@@ -82,7 +82,7 @@ export default function FullFeaturedCrudGrid({url, type}) {
     useEffect(() => {
         if (type !== "New") return
 
-        const es = new EventSource("http://18.220.226.53:8080/subscribe/andyaws.com");
+        const es = new EventSource(`${API_HOST}/subscribe/subscribe/user`);
 
         es.onopen = () => console.log(">>> Connection opened!");
 
