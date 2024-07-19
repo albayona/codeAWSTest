@@ -33,16 +33,15 @@ def subscribe(user_id):
 
 
 # SSE endpoint to subscribe and stream events
-@app.get("/subscribe")
-async def subscribe_to_events(request: Request):
-    user_id = request.headers.get('X-Consumer-Custom-Id')
-    print(user_id)
-    #user_id = user_id.replace("@", "")
-
+@app.get("/subscribe/{user}")
+async def subscribe_to_events(user: str, request: Request):
     async def event_generator():
-        print(f"Subscribing to user's channel: {user_id}")
+        uid = request.headers.get('X-Consumer-Custom-Id')
+        print(uid)
+        uid = uid.replace("@", "")
+        print(f"Subscribing to user's channel: {uid}")
         # Subscribe to user's channel
-        p = subscribe(user_id)
+        p = subscribe(uid)
         try:
             while True:
                 message = p.get_message()
@@ -54,7 +53,7 @@ async def subscribe_to_events(request: Request):
                 else:
                     await asyncio.sleep(1)
         except asyncio.CancelledError:
-            p.unsubscribe(user_id)
+            p.unsubscribe(uid)
             p.close()
 
     return EventSourceResponse(event_generator())
