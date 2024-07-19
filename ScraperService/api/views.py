@@ -1,18 +1,7 @@
-from django.shortcuts import render
-
 # Create your views here.
 from django.http import JsonResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-import json
-
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-
-from .models import Post
-from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-
 from .utils.jwt_user_authorization import get_user_from_header
 from .utils.scraper import Scraper
 
