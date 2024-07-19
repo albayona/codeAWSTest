@@ -34,7 +34,6 @@ def get_simple_post_max_tag(soup):
 
 def get_all_simple_posts(soup, tag):
     all_posts = soup.find_all('a', tag)
-    print(all_posts)
     atrs = []
     for p in all_posts:
         try:

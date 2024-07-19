@@ -96,14 +96,15 @@ class Scraper:
 
         simple_posts = get_all_simple_posts(soup, tag)
 
-        print(simple_posts)
+        for _ in simple_posts:
+            print(simple_posts.link)
 
         self.driver.quit()
 
         for simple_post in simple_posts:
             if non_existent(simple_post):
                 self.request_NLP_scrape(simple_post)
-                sleep(5)
+                sleep(10)
 
 
     def request_NLP_scrape(self, simple_post):
