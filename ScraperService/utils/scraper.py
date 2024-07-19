@@ -58,7 +58,7 @@ def cpu_bound_func_scrape(user, token, url, scroll, email="ricardobayonalatorre@
 
     for simple_post in simple_posts:
         request_NLP_scrape(token, user, simple_post)
-        sleep(8)
+        sleep(4)
 
 
 def login(driver, usr, pwd):
