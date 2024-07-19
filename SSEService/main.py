@@ -33,12 +33,11 @@ def subscribe(user_id):
 
 
 # SSE endpoint to subscribe and stream events
-@app.get("/subscribe/{user_id}")
-async def subscribe_to_events(user_id: str, request: Request):
+@app.get("/subscribe")
+async def subscribe_to_events(request: Request):
     async def event_generator():
-        user2 = request.headers.get('X-Consumer-Custom-Id')
-        print(user2)
-        print("user2")
+        user_id = request.headers.get('X-Consumer-Custom-Id')
+        user_id = user_id.replace("@", "")
         print(f"Subscribing to user's channel: {user_id}")
         # Subscribe to user's channel
         p = subscribe(user_id)
