@@ -62,6 +62,7 @@ async def publish_message(scraped_id: str, request: Request):
     try:
         user_id = request.headers.get('user')
         publish_data_on_redis(user_id, scraped_id)
+        print(f"Published message '{scraped_id}' to user '{user_id}'")
         return {"detail": f"Published message '{scraped_id}' to user '{user_id}'"}
     except Exception as e:
         return {"error": str(e)}
