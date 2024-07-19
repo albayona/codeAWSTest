@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             name="User",
             fields=[
                 (
-                    "id",
+                    "iss",
                     models.BigAutoField(
                         auto_created=True,
                         primary_key=True,

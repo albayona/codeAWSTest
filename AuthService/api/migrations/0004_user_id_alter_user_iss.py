@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="user",
-            name="id",
+            name="iss",
             field=models.BigAutoField(
                 auto_created=True,
                 default=1,

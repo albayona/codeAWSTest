@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterField(
             model_name="user",
-            name="id",
+            name="iss",
             field=models.UUIDField(
                 default=uuid.uuid4, editable=False, primary_key=True, serialize=False
             ),

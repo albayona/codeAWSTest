@@ -16,7 +16,7 @@ from api.models import User
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'role', 'iss')
+        fields = ('iss', 'username', 'email', 'role', 'iss')
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -82,7 +82,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             # Handle HTTP errors or connection issues
             return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def create_jwt_credentials(self, validated_data, id):
+    def create_jwt_credentials(self, validated_data, iss):
         with open('jwtRS256.key.pub', 'rb') as public_key_file:
 
             files = {
@@ -90,7 +90,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             }
 
             data = {
-                'key': id,
+                'key': iss,
                 'algorithm': 'RS256',
             }
 
