@@ -37,7 +37,7 @@ def subscribe(user_id):
 async def subscribe_to_events(request: Request):
     user_id = request.headers.get('X-Consumer-Custom-Id')
     print(user_id)
-    user_id = user_id.replace("@", "")
+    #user_id = user_id.replace("@", "")
 
     async def event_generator():
         print(f"Subscribing to user's channel: {user_id}")
