@@ -106,7 +106,7 @@ class Scraper:
 
     def request_NLP_scrape(self, simple_post):
         post = create_post(simple_post)
-        url = f"{BASE_URL}/scrape/scrape/{simple_post.link}"
+        url = f"{BASE_URL}/scrape-nlp/scrape-nlp/{simple_post.link}"
         headers = {
             "X-Consumer-Custom-Id": self.user,
             "Authorization": self.token,
