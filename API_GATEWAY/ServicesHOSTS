@@ -1,0 +1,12 @@
+Kong
+ssh -i "AWSTest.pem" ubuntu@ec2-3-20-227-39.us-east-2.compute.amazonaws.com
+
+NLP
+ssh -i "AWSTest.pem" ubuntu@ec2-3-135-1-255.us-east-2.compute.amazonaws.com
+ssh -i "AWSTest.pem" ubuntu@ec2-18-116-114-161.us-east-2.compute.amazonaws.com
+
+ScraperManager
+ssh -i "AWSTest.pem" ubuntu@ec2-18-220-156-191.us-east-2.compute.amazonaws.com
+
+Content/Pub
+ssh -i "AWSTest.pem" ubuntu@ec2-18-220-226-53.us-east-2.compute.amazonaws.com

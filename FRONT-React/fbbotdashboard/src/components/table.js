@@ -178,7 +178,7 @@ export default function FullFeaturedCrudGrid({url, type}) {
                         icon={<CircleNotificationsIcon/>}
                         label="New"
                         onClick={handleInfoClick(id)}
-                        color={isCarNewById(id) ? "primary" : "inherit"}
+                        color="primary"
                         disabled={isCarNewById(id)}
                     />,
 
