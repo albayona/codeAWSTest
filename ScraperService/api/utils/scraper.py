@@ -114,7 +114,7 @@ class Scraper:
             "Authorization": self.token,
         }
         # Make the GET request
-        response = requests.get(url, headers=headers)
+        response = requests.post(url, headers=headers)
         # Check the response
         if response.status_code == 200:
             post.uuid = response.json()['uuid']
