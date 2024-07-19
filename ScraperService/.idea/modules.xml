@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ScraperService.iml" filepath="$PROJECT_DIR$/.idea/ScraperService.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ScraperServiceFast.iml" filepath="$PROJECT_DIR$/.idea/ScraperServiceFast.iml" />
     </modules>
   </component>
 </project>
