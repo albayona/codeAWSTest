@@ -97,11 +97,11 @@ def create_car_view(request):
                 car=car
             )
 
-        user_email = request.user.email.replace('@', ' ')  # Example user ID
+        user_email = request.user.email.replace('@', '')  # Example user ID
         pub_event_url = f'{BASE_URL}/{user_email}/{car.id}/'
     
         response = requests.post(pub_event_url)
-
+        print({'status': 'success', 'car_id': car.id, 'event_url': pub_event_url, 'response': response.text})
         return JsonResponse({'status': 'success', 'car_id': car.id, 'event_url': pub_event_url, 'response': response.text})
 
     except KeyError as e:
