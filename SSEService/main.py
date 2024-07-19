@@ -2,9 +2,19 @@ from fastapi import FastAPI, WebSocket
 import redis
 import asyncio
 from sse_starlette.sse import EventSourceResponse
-
-app = FastAPI()
 from fastapi import Request
+from fastapi.middleware.cors import CORSMiddleware
+app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins
+    allow_credentials=True,  # Allows cookies to be included in cross-origin requests
+    allow_methods=["*"],  # Allows all HTTP methods (GET, POST, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
+
 
 # Redis client configuration
 redis_client = redis.StrictRedis(host='localhost', port=6379, db=1)
