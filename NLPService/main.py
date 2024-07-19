@@ -53,7 +53,7 @@ async def start_cpu_bound_task(uid: UUID, param: int, user: str) -> None:
     jobs[uid].status = "complete"
 
 
-@app.post("/scrape/{param}", status_code=HTTPStatus.ACCEPTED)
+@app.post("/scrape-nlp/{param}", status_code=HTTPStatus.ACCEPTED)
 async def scrape_task_handler(param: str, background_tasks: BackgroundTasks, request: Request):
     user = request.headers.get('X-Consumer-Custom-Id')
     API_GATEWAY.TOKEN = get_token(request)
