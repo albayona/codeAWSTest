@@ -174,7 +174,7 @@ def login():
 def publish_to_api(user_id, scraped_id, post: DetailedPost, token):
     try:
         # Define the endpoint URL
-        url = f"{API_GATEWAY.BASE_URL}/create/"
+        url = f"{API_GATEWAY.BASE_URL}/create/create/"
         headers = {
             'Authorization': f"Bearer {token['token']}",
             'X-Consumer-Custom-Id': user_id,
