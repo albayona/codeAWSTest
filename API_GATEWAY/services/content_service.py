@@ -23,6 +23,14 @@ def main():
         "unsee/"
     ]
 
+
+    '''
+    curl -i -s -X POST localhost:8001/services --data 'name=pub_service' --data 'url=http://18.220.226.53:8080'
+   
+    curl -i -s -X POST localhost:8001/services/pub_service/routes --data 'paths[]=/subscribe/' --data name=subscribe_
+    
+    '''
+
     # Register the service
     service_command = register_service(service_name, service_url, kong_base_url)
     print(f"Register Service Command for {service_name}:")
@@ -34,6 +42,8 @@ def main():
     print(f"Register Routes Commands for {service_name}:")
     for command in route_commands:
         print(command)
+
+
 
 
 if __name__ == "__main__":
