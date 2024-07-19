@@ -103,6 +103,8 @@ class Scraper:
         for simple_post in simple_posts:
             if non_existent(simple_post):
                 self.request_NLP_scrape(simple_post)
+                sleep(1)
+
 
     def request_NLP_scrape(self, simple_post):
         post = create_post(simple_post)
