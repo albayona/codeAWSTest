@@ -99,7 +99,7 @@ def create_car_view(request):
 
         user_email = request.user.email  # Example user ID
         pub_event_url = f'{BASE_URL}/{car.id}'
-        headers = {"user": {user_email}}
+        headers = {"user": user_email}
 
         response = requests.post(pub_event_url, headers=headers)
 
