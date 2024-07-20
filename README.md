@@ -45,11 +45,16 @@
      - It ensures data persistence and makes it accessible for future queries.
 
 7. **SSE Service**:
-   - **Action**: The SSE Service handles real-time updates.
-   - **Process**:
-     - The SSE Service monitors the Scraped Content Service for new car listings.
-     - It uses Redis for pub/sub messaging to push updates to clients.
-     - The React app subscribes to SSE events and updates the UI in real-time when new car listings are posted.
+
+- **Action**: Handles real-time updates for new car listings.
+
+- **Process**:
+   - **Event Publication**: The Scraped Content Service publishes events to Redis when new car listings are available.
+   - **Event Subscription**: The SSE Service, using FastAPI, subscribes to Redis channels to receive these events.
+   - **Real-Time Broadcasting**: The SSE Service broadcasts the events to clients via Server-Sent Events (SSE).
+   - **UI Update**: The React app subscribes to SSE events and updates the UI with new car listings in real-time.
+
+
 
 ### Tech Stack and Deployment
 
