@@ -7,8 +7,8 @@
 1. **Client Authentication**:
    - **Action**: The user logs in through the React application.
    - **Process**:
-     - The React app sends user credentials to the AuthService.
-     - AuthService verifies the credentials and returns an authentication token.
+     - The React app sends user credentials to the AuthService via  Kong.
+     - AuthService verifies the credentials and returns an authentication token, which will tthen be process by Kong to ensure authentication through all trafic.
      - The token is stored in the browser’s local storage for subsequent requests.
 
 2. **Client Interaction**:
