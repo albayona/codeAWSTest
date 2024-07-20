@@ -16,7 +16,9 @@ import {useEffect, useState} from "react";
 import {API_HOST, useFetchCars, useFetchGetCars, useFetchPutCars, useFetchRefreshCars} from "../hooks/useFetch";
 import DetailCard from "./detail";
 import {Button, Modal} from "@mui/material";
-
+import {EventSourcePlus} from "event-source-plus";
+import {useAuth} from "../conntexts/UserContext";
+import {fetchEventSource} from "@microsoft/fetch-event-source";
 
 const modalStyle = {
     position: 'absolute',
@@ -77,25 +79,76 @@ export default function FullFeaturedCrudGrid({url, type}) {
     const [open, setOpen] = React.useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+    const {token} = useAuth();
 
+    // useEffect(() => {
+    //     if (type !== "New") return
+    //
+    //     const es = new EventSourcePlus(`${API_HOST}/subscribe/subscribe/user`, {
+    //         method: "GET",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             'Authorization': `Bearer ${token}`,
+    //         },
+    //     });
+    //
+    //     const controller = es.listen({
+    //         onMessage(message) {
+    //             console.log(">>>", message);
+    //             if (message.startsWith('data')) {
+    //                 setActionDone(true);
+    //             }
+    //         },
+    //
+    //         onResponse() {
+    //             console.log(">>> Connection opened!");
+    //         },
+    //
+    //         onResponseError(e) {
+    //             console.log("ERROR!", e);
+    //         },
+    //
+    //     });
+    //
+    //     // return () => controller.abort();
+    //
+    // }, []);
 
     useEffect(() => {
-        if (type !== "New") return
+        const fetchData = async () => {
+            await fetchEventSource(`${API_HOST}/subscribe/subscribe/user`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    'Authorization': `Bearer ${token}`,
+                },
+                onopen(res) {
+                    if (res.ok && res.status === 200) {
+                        console.log("Connection made ", res);
+                    } else if (
+                        res.status >= 400 &&
+                        res.status < 500 &&
+                        res.status !== 429
+                    ) {
+                        console.log("Client side error ", res);
+                    }
+                },
+                onmessage(event) {
 
-        const es = new EventSource(`${API_HOST}/subscribe/subscribe/user`);
-
-        es.onopen = () => console.log(">>> Connection opened!");
-
-        es.onerror = (e) => console.log("ERROR!", e);
-
-        es.onmessage = (e) => {
-            console.log(">>>", e.data);
-            if (e.data.startsWith('data')) {
-                setActionDone(true);
-            }
+                    console.log(">>>", event.data);
+                    if (event.data.startsWith('data')) {
+                        setActionDone(true);
+                    }
+                },
+                onclose() {
+                    console.log("Connection closed by the server");
+                },
+                onerror(err) {
+                    console.log("There was an error from server", err);
+                },
+            });
         };
-
-        return () => es.close();
+        fetchData();
     }, []);
 
 

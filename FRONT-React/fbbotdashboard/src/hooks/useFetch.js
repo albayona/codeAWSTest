@@ -1,7 +1,7 @@
 import {useState, useEffect} from 'react';
 import {useAuth} from "../conntexts/UserContext";
 
-export const API_HOST = 'https://3.20.227.39:8000'
+export const API_HOST = 'http://3.20.227.39:8000'
 
 export const useFetchCars = (url, setCars) => {
     const [isLoading, setIsLoading] = useState(true);
