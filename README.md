@@ -1,6 +1,8 @@
 # Structural flow
 
 ![AWS web app structural flow](https://github.com/user-attachments/assets/82f72445-78f3-4cfb-bb67-b1354df29467)
+![Running demo Scraped Content Interacttion](https://www.youtube.com/watch?v=tjsPIQOluNw)
+![Running demo Scraping Feature](https://www.youtube.com/watch?v=tjsPIQOluNw](https://youtu.be/TJ_wMSHlQX4)=)
 
 ### Workflow Overview
 
